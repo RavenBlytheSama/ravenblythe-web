@@ -1,0 +1,8 @@
+name = "qixingzhong-sanctuary"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sanctuary-comments"
+database_id = "6b53bb14-b0b5-41d9-870f-cfedda073d6c"

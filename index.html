@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>奇形种收容所</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(145deg, #fffbe6 0%, #f5e6ff 50%, #e0c8ff 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      position: relative;
+    }
+
+    /* 全屏背景图：清晰显示 */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('Picture/background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 1;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    /* 主容器：保留模糊效果 */
+    .sanctuary-container {
+      width: 100%;
+      max-width: 1000px;
+      background-color: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 48px 48px 32px 32px;
+      padding: 2rem 2rem 3rem;
+      box-shadow: 0 20px 40px rgba(150, 100, 220, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+      border: 1px solid rgba(200, 170, 255, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 2rem;
+    }
+
+    /* ============================================================
+       顶部按钮栏
+       ============================================================ */
+    .top-nav {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-btn {
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #6b3fa0;
+      background: rgba(255, 250, 210, 0.8);
+      padding: 0.55rem 1.6rem;
+      border-radius: 50px;
+      border: 1px solid #d9b8ff;
+      box-shadow: 0 4px 10px rgba(170, 130, 230, 0.3);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .nav-btn:hover {
+      background: #f3e0ff;
+      color: #4d1f80;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(150, 100, 220, 0.4);
+      border-color: #b98aff;
+    }
+
+    .nav-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Tips 按钮稍微醒目一点 */
+    .nav-btn.tips-btn {
+      background: rgba(255, 235, 150, 0.9);
+      border-color: #ffd966;
+      color: #8a5a00;
+    }
+
+    .nav-btn.tips-btn:hover {
+      background: #ffeaa0;
+      color: #6b4400;
+      border-color: #ffcc33;
+    }
+
+    .site-title {
+      font-size: 3.5rem;
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #5b2a9e;
+      text-shadow: 3px 3px 0 #fff3b0, 6px 6px 10px rgba(140, 90, 210, 0.35);
+      margin-bottom: 2rem;
+      text-align: center;
+      word-break: break-word;
+      padding-bottom: 10px;
+      border-bottom: 4px dashed #c9a0ff;
+      display: inline-block;
+      line-height: 1.2;
+      width: 100%;
+      transition: transform 0.3s ease;
+    }
+
+    .site-title:hover {
+      transform: scale(1.02);
+      text-shadow: 4px 4px 0 #ffe985, 8px 8px 15px rgba(120, 70, 200, 0.4);
+    }
+
+    .gallery {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      width: 100%;
+    }
+
+    .picture-card {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 32px;
+      padding: 1.5rem 1.5rem 1.2rem;
+      box-shadow: 0 10px 25px rgba(170, 130, 230, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+      border: 1px solid rgba(210, 180, 255, 0.7);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .picture-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 30px rgba(150, 110, 220, 0.3), 0 0 0 2px #d9b8ff inset;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .picture-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 24px;
+      display: block;
+      box-shadow: 0 8px 18px rgba(140, 100, 210, 0.15);
+      border: 2px solid white;
+      transition: filter 0.3s ease, transform 0.3s ease;
+      object-fit: cover;
+      background-color: #faf5ff;
+      cursor: zoom-in;
+    }
+
+    .picture-card img:hover {
+      filter: brightness(1.02) saturate(1.1);
+      transform: scale(1.01);
+    }
+
+    .picture-label {
+      margin-top: 0.8rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #6b3fa0;
+      letter-spacing: 3px;
+      background: rgba(255, 250, 215, 0.8);
+      padding: 0.3rem 1.5rem;
+      border-radius: 50px;
+      border: 1px solid #d9b8ff;
+      box-shadow: 0 2px 6px rgba(170, 130, 230, 0.25);
+    }
+
+    /* 图片介绍文本 */
+    .picture-intro {
+      margin-top: 0.8rem;
+      width: 100%;
+      font-size: 0.98rem;
+      color: #4d2a70;
+      line-height: 1.8;
+      letter-spacing: 0.5px;
+      text-align: left;
+      background: rgba(255, 252, 235, 0.7);
+      padding: 0.7rem 1.1rem;
+      border-radius: 16px;
+      border: 1px dashed #d9b8ff;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ============================================================
+       灯箱
+       ============================================================ */
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(35, 15, 55, 0.88);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-inner {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: zoomIn 0.3s ease;
+    }
+
+    .lightbox-inner img {
+      max-width: 90vw;
+      max-height: 78vh;
+      width: auto;
+      height: auto;
+      border-radius: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      display: block;
+      background-color: #faf5ff;
+    }
+
+    .lightbox-caption {
+      margin-top: 1rem;
+      color: #fff8d6;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 3px;
+      background: rgba(91, 42, 158, 0.7);
+      padding: 0.4rem 1.6rem;
+      border-radius: 50px;
+      border: 1px solid rgba(220, 190, 255, 0.6);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: -48px;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      color: #5b2a9e;
+      font-size: 1.6rem;
+      font-weight: bold;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .lightbox-close:hover {
+      background: #f3e0ff;
+      transform: rotate(90deg) scale(1.1);
+    }
+
+    /* ============================================================
+       通用模态框
+       ============================================================ */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(35, 15, 55, 0.88);
+      z-index: 1100;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-box {
+      position: relative;
+      background: rgba(255, 253, 245, 0.98);
+      border-radius: 28px;
+      padding: 2.5rem 2rem 2rem;
+      max-width: 560px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(210, 180, 255, 0.6) inset;
+      border: 1px solid #d9b8ff;
+      animation: zoomIn 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #5b2a9e;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 3px dashed #c9a0ff;
+      width: 100%;
+      text-align: center;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 50%;
+      background: #f3e0ff;
+      color: #5b2a9e;
+      font-size: 1.4rem;
+      font-weight: bold;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(170, 130, 230, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: #e6ccff;
+      transform: rotate(90deg) scale(1.1);
+    }
+
+    .modal-text {
+      font-size: 1.02rem;
+      color: #4d2a70;
+      line-height: 1.9;
+      letter-spacing: 0.5px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      width: 100%;
+      text-align: left;
+    }
+
+    .modal-text.notice {
+      font-size: 1rem;
+      line-height: 2;
+    }
+
+    .modal-text.submit {
+      font-size: 1.08rem;
+      line-height: 2.1;
+      text-align: center;
+    }
+
+    /* Tips 弹窗文字：居中放大 */
+    .modal-text.tips {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 6px;
+      text-align: center;
+      color: #b3003c;
+      line-height: 1.6;
+      padding: 1rem 0;
+      text-shadow: 2px 2px 0 #ffe985;
+    }
+
+    .modal-img {
+      max-width: 100%;
+      max-height: 60vh;
+      border-radius: 18px;
+      border: 3px solid white;
+      box-shadow: 0 10px 30px rgba(140, 100, 210, 0.3);
+      display: block;
+      background-color: #faf5ff;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .sanctuary-container {
+        padding: 1.5rem 1rem 2rem;
+        border-radius: 32px;
+      }
+      .site-title {
+        font-size: 2.2rem;
+        letter-spacing: 3px;
+      }
+      .picture-card {
+        padding: 1rem;
+        border-radius: 24px;
+      }
+      .picture-label {
+        font-size: 0.9rem;
+      }
+      .picture-intro {
+        font-size: 0.88rem;
+        padding: 0.6rem 0.9rem;
+      }
+      .nav-btn {
+        font-size: 0.85rem;
+        padding: 0.45rem 1.1rem;
+        letter-spacing: 1px;
+      }
+      .modal-text.tips {
+        font-size: 1.5rem;
+        letter-spacing: 4px;
+      }
+      .lightbox-close {
+        top: -44px;
+        width: 36px;
+        height: 36px;
+        font-size: 1.4rem;
+      }
+      .lightbox-caption {
+        font-size: 0.95rem;
+      }
+      .modal-box {
+        padding: 2rem 1.2rem 1.5rem;
+      }
+      .modal-title {
+        font-size: 1.3rem;
+      }
+      .modal-text {
+        font-size: 0.92rem;
+      }
+    }
+
+    /* ============================================================
+       留言板样式
+       ============================================================ */
+    .comments-section {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto 2rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 32px;
+      border: 1px solid rgba(200, 170, 255, 0.5);
+      box-shadow: 0 20px 40px rgba(150, 100, 220, 0.2);
+    }
+    .comments-title {
+      font-size: 1.6rem;
+      color: #5b2a9e;
+      letter-spacing: 4px;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 3px dashed #c9a0ff;
+    }
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+    .comment-form input,
+    .comment-form textarea {
+      font-family: inherit;
+      font-size: 0.98rem;
+      padding: 0.7rem 1rem;
+      border-radius: 16px;
+      border: 1px solid #d9b8ff;
+      background: rgba(255, 253, 245, 0.9);
+      color: #4d2a70;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .comment-form input:focus,
+    .comment-form textarea:focus {
+      border-color: #b98aff;
+      box-shadow: 0 0 0 3px rgba(185, 138, 255, 0.2);
+    }
+    .comment-form textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+    .comment-form button {
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #fff;
+      background: linear-gradient(135deg, #8a4fd0, #6b3fa0);
+      padding: 0.7rem 2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      align-self: flex-end;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(140, 80, 210, 0.4);
+    }
+    .comment-form button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(140, 80, 210, 0.5);
+    }
+    .comment-form button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .comment-message {
+      font-size: 0.9rem;
+      min-height: 1.2rem;
+    }
+    .comment-message.success { color: #2e7d32; }
+    .comment-message.error { color: #c62828; }
+    .comment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .comment-loading,
+    .comment-empty {
+      text-align: center;
+      color: #8a6fb0;
+      font-size: 0.95rem;
+      padding: 1.5rem 0;
+    }
+    .comment-item {
+      background: rgba(255, 253, 245, 0.85);
+      padding: 1rem 1.2rem;
+      border-radius: 18px;
+      border-left: 4px solid #c9a0ff;
+      box-shadow: 0 4px 12px rgba(150, 110, 220, 0.15);
+    }
+    .comment-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .comment-item-nickname {
+      font-weight: 700;
+      color: #5b2a9e;
+      font-size: 0.95rem;
+    }
+    .comment-item-time {
+      font-size: 0.8rem;
+      color: #a08bc0;
+    }
+    .comment-item-content {
+      color: #4d2a70;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    @media (max-width: 600px) {
+      .comments-section { padding: 1.2rem; border-radius: 24px; }
+      .comments-title { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== 留言板（已移到最上方） ==================== -->
+  <div class="comments-section">
+    <h2 class="comments-title">💬 留言板</h2>
+
+    <div class="comment-form">
+      <input type="text" id="commentNickname" placeholder="昵称（可选）" maxlength="20">
+      <textarea id="commentContent" placeholder="写下你的留言……" maxlength="500"></textarea>
+      <button id="commentSubmit">发表留言</button>
+      <div id="commentMessage" class="comment-message"></div>
+    </div>
+
+    <div id="commentList" class="comment-list">
+      <p class="comment-loading">加载留言中……</p>
+    </div>
+  </div>
+  <!-- ==================== 留言板结束 ==================== -->
+
+  <div class="sanctuary-container">
+
+    <!-- 顶部按钮栏 -->
+    <div class="top-nav">
+      <button class="nav-btn tips-btn" data-modal="modalTips">Tips</button>
+      <button class="nav-btn" data-modal="modalSponsor">赞助我</button>
+      <button class="nav-btn" data-modal="modalSubmit">我要投稿</button>
+      <button class="nav-btn" data-modal="modalContact">联系站长</button>
+      <button class="nav-btn" data-modal="modalNotice">声明</button>
+    </div>
+
+    <h1 class="site-title">奇形种收容所</h1>
+    <div class="gallery" id="gallery"></div>
+  </div>
+
+  <!-- 灯箱 -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-inner">
+      <button class="lightbox-close" id="lightboxClose" aria-label="关闭">×</button>
+      <img id="lightboxImg" src="" alt="放大的收容物图片">
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="modal" id="modalTips">
+    <div class="modal-box">
+      <button class="modal-close" data-close aria-label="关闭">×</button>
+      <div class="modal-title">Tips</div>
+      <div class="modal-text tips">国庆节快乐</div>
+    </div>
+  </div>
+
+  <!-- 赞助我 -->
+  <div class="modal" id="modalSponsor">
+    <div class="modal-box">
+      <button class="modal-close" data-close aria-label="关闭">×</button>
+      <div class="modal-title">赞助我</div>
+      <img class="modal-img" src="Picture/money.jpg" alt="赞助二维码 / 赞助方式">
+    </div>
+  </div>
+
+  <!-- 我要投稿 -->
+  <div class="modal" id="modalSubmit">
+    <div class="modal-box">
+      <button class="modal-close" data-close aria-label="关闭">×</button>
+      <div class="modal-title">我要投稿</div>
+      <div class="modal-text submit">点击"联系站长"通过邮箱联系站长或直接通过其他方式联系站长，将要投稿的内容和要求发给站长即可</div>
+    </div>
+  </div>
+
+  <!-- 联系站长 -->
+  <div class="modal" id="modalContact">
+    <div class="modal-box">
+      <button class="modal-close" data-close aria-label="关闭">×</button>
+      <div class="modal-title">联系站长</div>
+      <div class="modal-text">站长联系方式：
+
+📧 邮箱：Raven_Blythe@outlook.com
+📧 邮箱：Raven_Blythe_Sama@outlook.com
+📧 邮箱：Raven_Sama@outlook.com
+📧 邮箱：Raven_Blythe@qq.com</div>
+    </div>
+  </div>
+
+  <!-- 声明 -->
+  <div class="modal" id="modalNotice">
+    <div class="modal-box">
+      <button class="modal-close" data-close aria-label="关闭">×</button>
+      <div class="modal-title">声明</div>
+      <div class="modal-text notice">网站声明：此网站由站长使用deepseek生成（做了一些修改），网站不展示血腥，暴力，色情的文本及图片，我愿意承担由我个人维护不当所产生的一切责任</div>
+    </div>
+  </div>
+
+  <script>
+    /* 1. 数组存储 P1 ~ P20
+       —— P1~P8 单独定制介绍，其余保持“介绍：待写入” */
+    const PICTURES = Array.from({ length: 20 }, (_, i) => {
+      const num = i + 1;
+
+      let intro = '介绍：待写入';
+
+      if (num === 1) {
+        intro = '介绍：此人吨位仅在年级主任之下，002号最严厉的主人，班主任最宠爱之人，绰号：洋葱';
+      }
+      if (num === 2) {
+        intro = '介绍：全培仁最深情之人&最成熟之人';
+      }
+      if (num === 3) {
+        intro = '介绍："哥的豪度零下108度"';
+      }
+      if (num === 4) {
+        intro = '介绍：全宇宙头发最整齐之人，火影2400的高玩，新南最忠诚的仆人，培仁最会谈恋爱之人';
+      }
+      if (num === 5) {
+        intro = '介绍：身份：天皇的后代&高市早苗的丈夫，人脉：孙笑川的兄弟，特点：半根舌头';
+      }
+      if (num === 6) {
+        intro = '介绍："爱因斯坦未必比我聪明"';
+      }
+      if (num === 7) {
+        intro = '介绍：世界上最黑的鸡蛋，全班第二个王';
+      }
+      if (num === 8) {
+        intro = '介绍：注意这是AI生成的，还有我是被迫的，为解决001号"为什么没有站长照片"的诉求';
+      }
+
+      return {
+        name: `P${num}`,
+        ext: 'jpg',
+        label: `编号:${String(num).padStart(3, '0')}`,
+        intro: intro
+      };
+    });
+
+    let pictureCount = PICTURES.length;
+
+    /* 2. 渲染画廊 */
+    function renderGallery() {
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
+
+      const list = PICTURES.slice(0, Math.min(pictureCount, PICTURES.length));
+
+      list.forEach(pic => {
+        const card = document.createElement('div');
+        card.className = 'picture-card';
+
+        const img = document.createElement('img');
+        img.src = `Picture/${pic.name}.${pic.ext}`;
+        img.alt = `奇形种收容所 ${pic.name} 收容物`;
+        img.loading = 'lazy';
+        img.addEventListener('click', () => openLightbox(pic));
+
+        const label = document.createElement('div');
+        label.className = 'picture-label';
+        label.textContent = pic.label;
+
+        const intro = document.createElement('div');
+        intro.className = 'picture-intro';
+        intro.textContent = pic.intro;
+
+        card.appendChild(img);
+        card.appendChild(label);
+        card.appendChild(intro);
+        gallery.appendChild(card);
+      });
+    }
+
+    /* 3. 灯箱 */
+    const lightbox        = document.getElementById('lightbox');
+    const lightboxImg     = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxClose   = document.getElementById('lightboxClose');
+
+    function openLightbox(pic) {
+      lightboxImg.src = `Picture/${pic.name}.${pic.ext}`;
+      lightboxImg.alt = `奇形种收容所 ${pic.name} 收容物`;
+      lightboxCaption.textContent = pic.label;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      lightboxImg.src = '';
+      document.body.style.overflow = '';
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+
+    /* 4. 通用模态框 */
+    const modals = document.querySelectorAll('.modal');
+
+    function openModal(id) {
+      const m = document.getElementById(id);
+      if (m) {
+        m.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeAllModals() {
+      modals.forEach(m => m.classList.remove('active'));
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-modal');
+        openModal(target);
+      });
+    });
+
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', closeAllModals);
+    });
+
+    modals.forEach(m => {
+      m.addEventListener('click', (e) => {
+        if (e.target === m) closeAllModals();
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (lightbox.classList.contains('active')) closeLightbox();
+        closeAllModals();
+      }
+    });
+
+    /* 5. 控制台全局函数 */
+    window.setPictureCount = function (n) {
+      const num = parseInt(n, 10);
+      if (isNaN(num) || num < 0) {
+        console.warn('❌ 请输入一个大于等于 0 的数字，例如 setPictureCount(5)');
+        return;
+      }
+      if (num > PICTURES.length) {
+        console.warn(`⚠️ 数组中只有 ${PICTURES.length} 张图片，已自动设为最大值。`);
+      }
+      pictureCount = Math.min(num, PICTURES.length);
+      renderGallery();
+    };
+
+    window.showAllPictures = function () {
+      pictureCount = PICTURES.length;
+      renderGallery();
+    };
+
+    window.hideAllPictures = function () {
+      pictureCount = 0;
+      renderGallery();
+    };
+
+    window.listPictures = function () {
+      console.table(PICTURES);
+      return PICTURES;
+    };
+
+    /* 6. 初始化 */
+    renderGallery();
+
+    /* 7. 页面加载后自动弹出 Tips 弹窗 */
+    window.addEventListener('load', () => {
+      openModal('modalTips');
+    });
+
+    /* ============================================================
+       8. 留言板功能
+       ============================================================ */
+    (function () {
+      const API = '/api/comments';
+      const nicknameInput = document.getElementById('commentNickname');
+      const contentInput = document.getElementById('commentContent');
+      const submitBtn = document.getElementById('commentSubmit');
+      const messageEl = document.getElementById('commentMessage');
+      const listEl = document.getElementById('commentList');
+
+      // 格式化时间
+      function formatTime(str) {
+        if (!str) return '';
+        const d = new Date(str.replace(' ', 'T') + 'Z');
+        if (isNaN(d.getTime())) return str;
+        return d.toLocaleString('zh-CN', { hour12: false });
+      }
+
+      // 转义 HTML，防止 XSS
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // 加载留言列表
+      async function loadComments() {
+        try {
+          const res = await fetch(API);
+          const json = await res.json();
+          if (!json.success) throw new Error(json.error || '加载失败');
+          const list = json.data || [];
+          if (list.length === 0) {
+            listEl.innerHTML = '<p class="comment-empty">还没有留言，来抢沙发吧～</p>';
+            return;
+          }
+          listEl.innerHTML = list.map(c => `
+            <div class="comment-item">
+              <div class="comment-item-header">
+                <span class="comment-item-nickname">${escapeHtml(c.nickname)}</span>
+                <span class="comment-item-time">${formatTime(c.created_at)}</span>
+              </div>
+              <div class="comment-item-content">${escapeHtml(c.content)}</div>
+            </div>
+          `).join('');
+        } catch (err) {
+          listEl.innerHTML = `<p class="comment-empty">留言加载失败：${escapeHtml(err.message)}</p>`;
+        }
+      }
+
+      // 提交留言
+      async function submitComment() {
+        const nickname = nicknameInput.value.trim();
+        const content = contentInput.value.trim();
+        if (!content) {
+          messageEl.textContent = '请填写留言内容';
+          messageEl.className = 'comment-message error';
+          return;
+        }
+        submitBtn.disabled = true;
+        submitBtn.textContent = '提交中…';
+        messageEl.textContent = '';
+        messageEl.className = 'comment-message';
+
+        try {
+          const res = await fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nickname, content }),
+          });
+          const json = await res.json();
+          if (!json.success) throw new Error(json.error || '提交失败');
+          messageEl.textContent = '留言成功！';
+          messageEl.className = 'comment-message success';
+          contentInput.value = '';
+          await loadComments();
+        } catch (err) {
+          messageEl.textContent = '提交失败：' + err.message;
+          messageEl.className = 'comment-message error';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '发表留言';
+        }
+      }
+
+      submitBtn.addEventListener('click', submitComment);
+      loadComments();
+    })();
+
+    console.log(
+      '%c💜 奇形种收容所 · 控制台已就绪 💛',
+      'color:#8a4fd0;font-size:16px;font-weight:bold;'
+    );
+    console.log('可用命令：setPictureCount(n) / showAllPictures() / hideAllPictures() / listPictures()');
+  </script>
+</body>
+</html>
