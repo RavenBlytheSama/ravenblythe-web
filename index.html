@@ -95,19 +95,6 @@
       transform: translateY(0);
     }
 
-    /* Tips 按钮稍微醒目一点 */
-    .nav-btn.tips-btn {
-      background: rgba(255, 235, 150, 0.9);
-      border-color: #ffd966;
-      color: #8a5a00;
-    }
-
-    .nav-btn.tips-btn:hover {
-      background: #ffeaa0;
-      color: #6b4400;
-      border-color: #ffcc33;
-    }
-
     .site-title {
       font-size: 3.5rem;
       font-weight: 900;
@@ -388,18 +375,6 @@
       text-align: center;
     }
 
-    /* Tips 弹窗文字：居中放大 */
-    .modal-text.tips {
-      font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: 6px;
-      text-align: center;
-      color: #b3003c;
-      line-height: 1.6;
-      padding: 1rem 0;
-      text-shadow: 2px 2px 0 #ffe985;
-    }
-
     .modal-img {
       max-width: 100%;
       max-height: 60vh;
@@ -444,10 +419,6 @@
         font-size: 0.85rem;
         padding: 0.45rem 1.1rem;
         letter-spacing: 1px;
-      }
-      .modal-text.tips {
-        font-size: 1.5rem;
-        letter-spacing: 4px;
       }
       .lightbox-close {
         top: -44px;
@@ -599,7 +570,7 @@
 </head>
 <body>
 
-  <!-- ==================== 留言板（已移到最上方） ==================== -->
+  <!-- ==================== 留言板 ==================== -->
   <div class="comments-section">
     <h2 class="comments-title">💬 留言板</h2>
 
@@ -618,9 +589,8 @@
 
   <div class="sanctuary-container">
 
-    <!-- 顶部按钮栏 -->
+    <!-- 顶部按钮栏（已移除 Tips） -->
     <div class="top-nav">
-      <button class="nav-btn tips-btn" data-modal="modalTips">Tips</button>
       <button class="nav-btn" data-modal="modalSponsor">赞助我</button>
       <button class="nav-btn" data-modal="modalSubmit">我要投稿</button>
       <button class="nav-btn" data-modal="modalContact">联系站长</button>
@@ -637,15 +607,6 @@
       <button class="lightbox-close" id="lightboxClose" aria-label="关闭">×</button>
       <img id="lightboxImg" src="" alt="放大的收容物图片">
       <div class="lightbox-caption" id="lightboxCaption"></div>
-    </div>
-  </div>
-
-  <!-- Tips -->
-  <div class="modal" id="modalTips">
-    <div class="modal-box">
-      <button class="modal-close" data-close aria-label="关闭">×</button>
-      <div class="modal-title">Tips</div>
-      <div class="modal-text tips">国庆节快乐</div>
     </div>
   </div>
 
@@ -691,8 +652,8 @@
   </div>
 
   <script>
-    /* 1. 数组存储 P1 ~ P20
-       —— P1~P8 单独定制介绍，其余保持“介绍：待写入” */
+    /* 1. 数组存储 P1 ~ P8
+       —— P1~P8 单独定制介绍 */
     const PICTURES = Array.from({ length: 8 }, (_, i) => {
       const num = i + 1;
 
@@ -720,7 +681,7 @@
         intro = '介绍：世界上最黑的鸡蛋，全班第二个王';
       }
       if (num === 8) {
-        intro = '介绍：注意这是AI生成的，还有我是被迫的，为解决001号"为什么没有站长照片"的诉求';
+        intro = '介绍：建站以来第一个主动想被挂上去的人，人民的好班长，13班的顶梁柱';
       }
 
       return {
@@ -862,13 +823,8 @@
     /* 6. 初始化 */
     renderGallery();
 
-    /* 7. 页面加载后自动弹出 Tips 弹窗 */
-    window.addEventListener('load', () => {
-      openModal('modalTips');
-    });
-
     /* ============================================================
-       8. 留言板功能
+       7. 留言板功能
        ============================================================ */
     (function () {
       const API = '/api/comments';
