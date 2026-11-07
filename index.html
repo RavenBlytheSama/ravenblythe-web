@@ -37,7 +37,7 @@
     }
 
     /* ============================================================
-       整个应用的包裹层（用于整体旋转）
+       整个应用的固定包裹层（用于整体旋转和固定尺寸）
        ============================================================ */
     #app-wrapper {
       position: fixed;
@@ -46,17 +46,19 @@
       width: 100vw;
       height: 100vh;
       height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      /* 旋转动画 */
-      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s ease, height 0.4s ease;
+      overflow: hidden; /* 禁止外层滚动 */
       transform-origin: top left;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
     }
 
-    /* 内部实际负责滚动的容器 */
+    /* 内部实际负责滚动的容器（绝对定位防止高度塌陷） */
     .scroll-container {
-      flex: 1;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch; /* iOS 平滑滚动 */
@@ -64,6 +66,17 @@
       flex-direction: column;
       align-items: center;
       padding: 2rem 1rem;
+    }
+
+    /* ============================================================
+       强制 CSS 横屏模式 (核心修复点)
+       ============================================================ */
+    body.force-landscape #app-wrapper {
+      /* 宽高互换，兼容移动端动态视口 */
+      width: 100dvh;
+      height: 100vw;
+      /* 顺时针旋转90度并平移回屏幕内 */
+      transform: rotate(90deg) translateY(-100dvh);
     }
 
     /* 主容器 */
@@ -121,7 +134,7 @@
       transform: translateY(0);
     }
 
-    /* 专为横屏按钮加的显眼样式 */
+    /* 横屏按钮样式 */
     .nav-btn.rotate-btn {
       background: rgba(255, 235, 150, 0.9);
       border-color: #ffd966;
@@ -230,10 +243,12 @@
       word-break: break-word;
     }
 
-    /* 灯箱 */
-    .lightbox {
+    /* ============================================================
+       灯箱与弹窗 (设为 absolute 绝对定位，随 app-wrapper 旋转)
+       ============================================================ */
+    .lightbox, .modal {
       display: none;
-      position: absolute; /* 改为 absolute，相对于 #app-wrapper */
+      position: absolute; /* 相对于 #app-wrapper 定位 */
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(35, 15, 55, 0.88);
       z-index: 1000;
@@ -243,7 +258,9 @@
       animation: fadeIn 0.25s ease;
     }
 
-    .lightbox.active {
+    .modal { z-index: 1100; }
+
+    .lightbox.active, .modal.active {
       display: flex;
     }
 
@@ -306,23 +323,6 @@
     .lightbox-close:hover {
       background: #f3e0ff;
       transform: rotate(90deg) scale(1.1);
-    }
-
-    /* 通用模态框 */
-    .modal {
-      display: none;
-      position: absolute; /* 改为 absolute，相对于 #app-wrapper */
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(35, 15, 55, 0.88);
-      z-index: 1100;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .modal.active {
-      display: flex;
     }
 
     .modal-box {
@@ -391,16 +391,8 @@
       text-align: left;
     }
 
-    .modal-text.notice {
-      font-size: 1rem;
-      line-height: 2;
-    }
-
-    .modal-text.submit {
-      font-size: 1.08rem;
-      line-height: 2.1;
-      text-align: center;
-    }
+    .modal-text.notice { font-size: 1rem; line-height: 2; }
+    .modal-text.submit { font-size: 1.08rem; line-height: 2.1; text-align: center; }
 
     .modal-img {
       max-width: 100%;
@@ -422,50 +414,19 @@
       to   { transform: scale(1);    opacity: 1; }
     }
 
-    /* 手机端适配 */
+    /* 手机端竖屏适配 */
     @media (max-width: 600px) {
-      .sanctuary-container {
-        padding: 1.5rem 1rem 2rem;
-        border-radius: 32px;
-      }
-      .site-title {
-        font-size: 2.2rem;
-        letter-spacing: 3px;
-      }
-      .picture-card {
-        padding: 1rem;
-        border-radius: 24px;
-      }
-      .picture-label {
-        font-size: 0.9rem;
-      }
-      .picture-intro {
-        font-size: 0.88rem;
-        padding: 0.6rem 0.9rem;
-      }
-      .nav-btn {
-        font-size: 0.85rem;
-        padding: 0.45rem 1.1rem;
-        letter-spacing: 1px;
-      }
-      .lightbox-close {
-        top: -44px;
-        width: 36px;
-        height: 36px;
-        font-size: 1.4rem;
-      }
-      .lightbox-caption {
-        font-size: 0.95rem;
-      }
-      .modal-box {
-        padding: 2rem 1.2rem 1.5rem;
-      }
-      .modal-title {
-        font-size: 1.3rem;
-      }
-      .modal-text {
-        font-size: 0.92rem;
-      }
+      .sanctuary-container { padding: 1.5rem 1rem 2rem; border-radius: 32px; }
+      .site-title { font-size: 2.2rem; letter-spacing: 3px; }
+      .picture-card { padding: 1rem; border-radius: 24px; }
+      .picture-label { font-size: 0.9rem; }
+      .picture-intro { font-size: 0.88rem; padding: 0.6rem 0.9rem; }
+      .nav-btn { font-size: 0.85rem; padding: 0.45rem 1.1rem; letter-spacing: 1px; }
+      .lightbox-close { top: -44px; width: 36px; height: 36px; font-size: 1.4rem; }
+      .lightbox-caption { font-size: 0.95rem; }
+      .modal-box { padding: 2rem 1.2rem 1.5rem; }
+      .modal-title { font-size: 1.3rem; }
+      .modal-text { font-size: 0.92rem; }
     }
 
     /* 留言板样式 */
@@ -594,7 +555,7 @@
       .comments-title { font-size: 1.3rem; }
     }
 
-    /* 当物理设备本身处于横屏时，隐藏横屏按钮（无需强制旋转） */
+    /* 当物理设备本身处于横屏时，隐藏强制横屏按钮（因为不需要了） */
     @media (orientation: landscape) {
       .nav-btn.rotate-btn {
         display: none;
@@ -630,7 +591,7 @@
       <div class="sanctuary-container">
         <!-- 顶部按钮栏 -->
         <div class="top-nav">
-          <!-- 新增的强制横屏按钮 -->
+          <!-- 强制横屏按钮 -->
           <button class="nav-btn rotate-btn" id="btnRotate">横屏浏览</button>
           <button class="nav-btn" data-modal="modalSponsor">赞助我</button>
           <button class="nav-btn" data-modal="modalSubmit">我要投稿</button>
@@ -644,7 +605,7 @@
 
     </div> <!-- end of scroll-container -->
 
-    <!-- ==================== 弹窗与灯箱（必须在滚动容器外，随整个屏幕一起旋转） ==================== -->
+    <!-- ==================== 弹窗与灯箱（脱离滚动流，随屏幕旋转并始终居中） ==================== -->
     
     <!-- 灯箱 -->
     <div class="lightbox" id="lightbox">
@@ -900,60 +861,34 @@
     })();
 
     /* ============================================================
-       8. 强制 CSS 旋转横屏逻辑
+       8. 强制 CSS 旋转横屏逻辑（修复滚动 Bug）
        ============================================================ */
     (function () {
       const btnRotate = document.getElementById('btnRotate');
-      const appWrapper = document.getElementById('app-wrapper');
-      let isLandscapeMode = false;
-
-      function applyRotation() {
-        // 如果物理屏幕本身就是横的，那么不需要强制旋转（系统会自动适配）
-        if (window.innerWidth > window.innerHeight) {
-          appWrapper.style.width = '100%';
-          appWrapper.style.height = '100%';
-          appWrapper.style.transform = 'none';
-          btnRotate.textContent = '横屏浏览';
-          isLandscapeMode = false;
-          return;
-        }
-
-        if (isLandscapeMode) {
-          // 强制横屏：把宽变成高，高变成宽，并顺时针旋转90度
-          const w = window.innerHeight;
-          const h = window.innerWidth;
-          
-          appWrapper.style.width = `${w}px`;
-          appWrapper.style.height = `${h}px`;
-          appWrapper.style.transformOrigin = 'top left';
-          appWrapper.style.transform = `rotate(90deg) translateY(-${w}px)`;
-          
-          btnRotate.textContent = '恢复竖屏';
-        } else {
-          // 恢复竖屏
-          appWrapper.style.width = '100%';
-          appWrapper.style.height = '100%';
-          appWrapper.style.transform = 'none';
-          
-          btnRotate.textContent = '横屏浏览';
-        }
-      }
+      const body = document.body;
 
       btnRotate.addEventListener('click', () => {
-        if (window.innerWidth > window.innerHeight) {
-          alert('您当前已经处于物理横屏状态，无需强制旋转。');
+        // 如果物理屏幕本身就是横的，提示无需强制
+        if (window.innerWidth > window.innerHeight && !body.classList.contains('force-landscape')) {
+          alert('您当前已处于物理横屏状态，无需强制旋转。');
           return;
         }
-        isLandscapeMode = !isLandscapeMode;
-        applyRotation();
+
+        body.classList.toggle('force-landscape');
+
+        if (body.classList.contains('force-landscape')) {
+          btnRotate.textContent = '恢复竖屏';
+        } else {
+          btnRotate.textContent = '横屏浏览';
+        }
       });
 
-      // 当设备物理旋转时，自动重置状态，避免排版错乱
+      // 当用户物理旋转设备时，自动取消强制旋转状态，避免冲突
       window.addEventListener('resize', () => {
-        if (window.innerWidth > window.innerHeight) {
-          isLandscapeMode = false;
+        if (window.innerWidth > window.innerHeight && body.classList.contains('force-landscape')) {
+          body.classList.remove('force-landscape');
+          btnRotate.textContent = '横屏浏览';
         }
-        applyRotation();
       });
     })();
 
