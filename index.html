@@ -22,14 +22,20 @@
       position: relative;
     }
 
-    /* 全屏背景图：清晰显示 */
+    /* ============================================================
+       【改动 1】全屏背景图：移动端高度修正
+       - 用 inset: 0 + 100dvh 代替 width/height: 100%，解决
+         移动端地址栏收缩时背景下方露底 / 跳动的问题
+       - background-size 保持 cover，若想看到完整图可改为 contain
+         （contain 会留白，但整张图可见）
+       ============================================================ */
     body::before {
       content: "";
       position: fixed;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
-      height: 100%;
+      height: 100vh;   /* 旧浏览器兜底 */
+      height: 100dvh;  /* 动态视口高度，随地址栏收缩实时更新 */
       background-image: url('Picture/background.jpg');
       background-size: cover;
       background-position: center;
@@ -566,6 +572,129 @@
       .comments-section { padding: 1.2rem; border-radius: 24px; }
       .comments-title { font-size: 1.3rem; }
     }
+
+    /* ============================================================
+       【改动 2】横屏提示遮罩样式
+       ============================================================ */
+    .rotate-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: linear-gradient(145deg, #fffbe6 0%, #f5e6ff 50%, #e0c8ff 100%);
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      animation: fadeIn 0.25s ease;
+    }
+
+    /* 仅在「竖屏 + 触屏设备 + 窄屏」时显示；用户点了「仍然竖屏」后不再显示 */
+    @media (orientation: portrait) and (pointer: coarse) and (max-width: 900px) {
+      .rotate-overlay:not(.dismissed) {
+        display: flex;
+      }
+    }
+
+    .rotate-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 320px;
+    }
+
+    .rotate-phone {
+      font-size: 4.5rem;
+      line-height: 1;
+      display: inline-block;
+      animation: rotatePhone 2.2s ease-in-out infinite;
+      transform-origin: center center;
+    }
+
+    @keyframes rotatePhone {
+      0%, 35%   { transform: rotate(0deg); }
+      65%, 100% { transform: rotate(90deg); }
+    }
+
+    .rotate-content h2 {
+      color: #5b2a9e;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 4px;
+      margin: 1.2rem 0 0.8rem;
+      text-shadow: 2px 2px 0 #fff3b0;
+    }
+
+    .rotate-content p {
+      color: #6b3fa0;
+      font-size: 1rem;
+      line-height: 1.8;
+      letter-spacing: 1px;
+    }
+
+    .rotate-dismiss {
+      margin-top: 2rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #6b3fa0;
+      background: rgba(255, 250, 210, 0.85);
+      border: 1px solid #d9b8ff;
+      padding: 0.6rem 1.8rem;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(170, 130, 230, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .rotate-dismiss:hover {
+      background: #f3e0ff;
+      transform: translateY(-2px);
+    }
+
+    /* 遮罩出现时锁定页面滚动，防止背后内容跟着动 */
+    body.rotate-locked {
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       【改动 3】横屏布局适配
+       手机横屏后高度很矮（~360-430px），收紧间距让一屏看到更多
+       ============================================================ */
+    @media (orientation: landscape) and (max-height: 500px) {
+      body {
+        padding: 1rem 1rem;
+      }
+      .sanctuary-container {
+        margin-top: 1rem;
+        padding: 1rem 1.5rem 2rem;
+      }
+      .comments-section {
+        padding: 1rem 1.2rem;
+      }
+      .site-title {
+        font-size: 2rem;
+        letter-spacing: 4px;
+        margin-bottom: 1rem;
+        padding-bottom: 6px;
+      }
+      .top-nav {
+        margin-bottom: 1rem;
+        gap: 0.6rem;
+      }
+      .nav-btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 1rem;
+      }
+      .gallery {
+        gap: 1.2rem;
+      }
+      .picture-card {
+        max-width: 420px;
+        padding: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -648,6 +777,18 @@
       <button class="modal-close" data-close aria-label="关闭">×</button>
       <div class="modal-title">声明</div>
       <div class="modal-text notice">网站声明：此网站由站长使用deepseek生成（做了一些修改），网站不展示血腥，暴力，色情的文本及图片，我愿意承担由我个人维护不当所产生的一切责任</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       【改动 2 - 续】横屏提示遮罩
+       ============================================================ -->
+  <div id="rotateOverlay" class="rotate-overlay" role="dialog" aria-modal="true" aria-label="横屏提示">
+    <div class="rotate-content">
+      <div class="rotate-phone">📱</div>
+      <h2>请横屏浏览</h2>
+      <p>本页面为横屏设计<br>旋转手机可获得最佳浏览体验</p>
+      <button id="rotateDismiss" class="rotate-dismiss">仍然竖屏浏览</button>
     </div>
   </div>
 
@@ -911,6 +1052,51 @@
 
       submitBtn.addEventListener('click', submitComment);
       loadComments();
+    })();
+
+    /* ============================================================
+       【改动 2 - 续】8. 横屏提示逻辑
+       ============================================================ */
+    (function () {
+      const overlay = document.getElementById('rotateOverlay');
+      const dismissBtn = document.getElementById('rotateDismiss');
+      if (!overlay || !dismissBtn) return;
+
+      // 用 matchMedia 和 CSS 里的媒体查询保持一致
+      const mq = window.matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 900px)');
+
+      // 记住用户的选择（sessionStorage：关掉标签页重开才会重新提示）
+      let dismissed = false;
+      try {
+        dismissed = sessionStorage.getItem('rotateDismissed') === '1';
+      } catch (e) { /* 隐私模式下可能抛异常，忽略 */ }
+
+      if (dismissed) overlay.classList.add('dismissed');
+
+      // 同步 body 的滚动锁定状态
+      function syncLock() {
+        const shown = mq.matches && !overlay.classList.contains('dismissed');
+        document.body.classList.toggle('rotate-locked', shown);
+      }
+
+      dismissBtn.addEventListener('click', () => {
+        overlay.classList.add('dismissed');
+        try {
+          sessionStorage.setItem('rotateDismissed', '1');
+        } catch (e) { /* 忽略 */ }
+        syncLock();
+      });
+
+      // 监听屏幕方向变化 / 尺寸变化，实时更新
+      if (mq.addEventListener) {
+        mq.addEventListener('change', syncLock);
+      } else {
+        mq.addListener(syncLock); // 旧浏览器兜底
+      }
+      window.addEventListener('resize', syncLock);
+      window.addEventListener('orientationchange', () => setTimeout(syncLock, 100));
+
+      syncLock();
     })();
 
     console.log(
