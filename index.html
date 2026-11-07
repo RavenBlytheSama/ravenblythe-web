@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>奇形种收容所</title>
   <style>
     * {
@@ -14,28 +14,19 @@
     body {
       font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       background: linear-gradient(145deg, #fffbe6 0%, #f5e6ff 50%, #e0c8ff 100%);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
+      /* 阻止系统默认滚动，交由内部容器处理 */
+      overflow: hidden; 
       position: relative;
     }
 
-    /* ============================================================
-       【改动 1】全屏背景图：移动端高度修正
-       - 用 inset: 0 + 100dvh 代替 width/height: 100%，解决
-         移动端地址栏收缩时背景下方露底 / 跳动的问题
-       - background-size 保持 cover，若想看到完整图可改为 contain
-         （contain 会留白，但整张图可见）
-       ============================================================ */
+    /* 全屏背景图 */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      width: 100%;
-      height: 100vh;   /* 旧浏览器兜底 */
-      height: 100dvh;  /* 动态视口高度，随地址栏收缩实时更新 */
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
       background-image: url('Picture/background.jpg');
       background-size: cover;
       background-position: center;
@@ -45,7 +36,37 @@
       pointer-events: none;
     }
 
-    /* 主容器：保留模糊效果 */
+    /* ============================================================
+       整个应用的包裹层（用于整体旋转）
+       ============================================================ */
+    #app-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      /* 旋转动画 */
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s ease, height 0.4s ease;
+      transform-origin: top left;
+      z-index: 1;
+    }
+
+    /* 内部实际负责滚动的容器 */
+    .scroll-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch; /* iOS 平滑滚动 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    /* 主容器 */
     .sanctuary-container {
       width: 100%;
       max-width: 1000px;
@@ -60,11 +81,10 @@
       flex-direction: column;
       align-items: center;
       margin-top: 2rem;
+      flex-shrink: 0;
     }
 
-    /* ============================================================
-       顶部按钮栏
-       ============================================================ */
+    /* 顶部按钮栏 */
     .top-nav {
       width: 100%;
       display: flex;
@@ -99,6 +119,18 @@
 
     .nav-btn:active {
       transform: translateY(0);
+    }
+
+    /* 专为横屏按钮加的显眼样式 */
+    .nav-btn.rotate-btn {
+      background: rgba(255, 235, 150, 0.9);
+      border-color: #ffd966;
+      color: #8a5a00;
+    }
+    .nav-btn.rotate-btn:hover {
+      background: #ffeaa0;
+      color: #6b4400;
+      border-color: #ffcc33;
     }
 
     .site-title {
@@ -182,7 +214,6 @@
       box-shadow: 0 2px 6px rgba(170, 130, 230, 0.25);
     }
 
-    /* 图片介绍文本 */
     .picture-intro {
       margin-top: 0.8rem;
       width: 100%;
@@ -199,16 +230,11 @@
       word-break: break-word;
     }
 
-    /* ============================================================
-       灯箱
-       ============================================================ */
+    /* 灯箱 */
     .lightbox {
       display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: absolute; /* 改为 absolute，相对于 #app-wrapper */
+      top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(35, 15, 55, 0.88);
       z-index: 1000;
       justify-content: center;
@@ -282,16 +308,11 @@
       transform: rotate(90deg) scale(1.1);
     }
 
-    /* ============================================================
-       通用模态框
-       ============================================================ */
+    /* 通用模态框 */
     .modal {
       display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: absolute; /* 改为 absolute，相对于 #app-wrapper */
+      top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(35, 15, 55, 0.88);
       z-index: 1100;
       justify-content: center;
@@ -401,6 +422,7 @@
       to   { transform: scale(1);    opacity: 1; }
     }
 
+    /* 手机端适配 */
     @media (max-width: 600px) {
       .sanctuary-container {
         padding: 1.5rem 1rem 2rem;
@@ -446,9 +468,7 @@
       }
     }
 
-    /* ============================================================
-       留言板样式
-       ============================================================ */
+    /* 留言板样式 */
     .comments-section {
       width: 100%;
       max-width: 1000px;
@@ -460,6 +480,7 @@
       border-radius: 32px;
       border: 1px solid rgba(200, 170, 255, 0.5);
       box-shadow: 0 20px 40px rgba(150, 100, 220, 0.2);
+      flex-shrink: 0;
     }
     .comments-title {
       font-size: 1.6rem;
@@ -573,264 +594,125 @@
       .comments-title { font-size: 1.3rem; }
     }
 
-    /* ============================================================
-       【改动 2】横屏提示遮罩样式
-       ============================================================ */
-    .rotate-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      background: linear-gradient(145deg, #fffbe6 0%, #f5e6ff 50%, #e0c8ff 100%);
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-      text-align: center;
-      animation: fadeIn 0.25s ease;
-    }
-
-    /* 仅在「竖屏 + 触屏设备 + 窄屏」时显示；用户点了「仍然竖屏」后不再显示 */
-    @media (orientation: portrait) and (pointer: coarse) and (max-width: 900px) {
-      .rotate-overlay:not(.dismissed) {
-        display: flex;
-      }
-    }
-
-    .rotate-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 320px;
-    }
-
-    .rotate-phone {
-      font-size: 4.5rem;
-      line-height: 1;
-      display: inline-block;
-      animation: rotatePhone 2.2s ease-in-out infinite;
-      transform-origin: center center;
-    }
-
-    @keyframes rotatePhone {
-      0%, 35%   { transform: rotate(0deg); }
-      65%, 100% { transform: rotate(90deg); }
-    }
-
-    .rotate-content h2 {
-      color: #5b2a9e;
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: 4px;
-      margin: 1.2rem 0 0.8rem;
-      text-shadow: 2px 2px 0 #fff3b0;
-    }
-
-    .rotate-content p {
-      color: #6b3fa0;
-      font-size: 1rem;
-      line-height: 1.8;
-      letter-spacing: 1px;
-    }
-
-    .rotate-dismiss {
-      margin-top: 2rem;
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 2px;
-      color: #6b3fa0;
-      background: rgba(255, 250, 210, 0.85);
-      border: 1px solid #d9b8ff;
-      padding: 0.6rem 1.8rem;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(170, 130, 230, 0.3);
-      transition: all 0.25s ease;
-    }
-
-    .rotate-dismiss:hover {
-      background: #f3e0ff;
-      transform: translateY(-2px);
-    }
-
-    /* 遮罩出现时锁定页面滚动，防止背后内容跟着动 */
-    body.rotate-locked {
-      overflow: hidden;
-    }
-
-    /* ============================================================
-       【改动 3】横屏布局适配
-       手机横屏后高度很矮（~360-430px），收紧间距让一屏看到更多
-       ============================================================ */
-    @media (orientation: landscape) and (max-height: 500px) {
-      body {
-        padding: 1rem 1rem;
-      }
-      .sanctuary-container {
-        margin-top: 1rem;
-        padding: 1rem 1.5rem 2rem;
-      }
-      .comments-section {
-        padding: 1rem 1.2rem;
-      }
-      .site-title {
-        font-size: 2rem;
-        letter-spacing: 4px;
-        margin-bottom: 1rem;
-        padding-bottom: 6px;
-      }
-      .top-nav {
-        margin-bottom: 1rem;
-        gap: 0.6rem;
-      }
-      .nav-btn {
-        font-size: 0.85rem;
-        padding: 0.4rem 1rem;
-      }
-      .gallery {
-        gap: 1.2rem;
-      }
-      .picture-card {
-        max-width: 420px;
-        padding: 1rem;
+    /* 当物理设备本身处于横屏时，隐藏横屏按钮（无需强制旋转） */
+    @media (orientation: landscape) {
+      .nav-btn.rotate-btn {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- ==================== 留言板 ==================== -->
-  <div class="comments-section">
-    <h2 class="comments-title">💬 留言板</h2>
+  <!-- 整个应用的主包裹层 -->
+  <div id="app-wrapper">
+    
+    <!-- 滚动内容区 -->
+    <div class="scroll-container">
+      
+      <!-- ==================== 留言板 ==================== -->
+      <div class="comments-section">
+        <h2 class="comments-title">💬 留言板</h2>
 
-    <div class="comment-form">
-      <input type="text" id="commentNickname" placeholder="昵称（可选）" maxlength="20">
-      <textarea id="commentContent" placeholder="写下你的留言……" maxlength="500"></textarea>
-      <button id="commentSubmit">发表留言</button>
-      <div id="commentMessage" class="comment-message"></div>
+        <div class="comment-form">
+          <input type="text" id="commentNickname" placeholder="昵称（可选）" maxlength="20">
+          <textarea id="commentContent" placeholder="写下你的留言……" maxlength="500"></textarea>
+          <button id="commentSubmit">发表留言</button>
+          <div id="commentMessage" class="comment-message"></div>
+        </div>
+
+        <div id="commentList" class="comment-list">
+          <p class="comment-loading">加载留言中……</p>
+        </div>
+      </div>
+      <!-- ==================== 留言板结束 ==================== -->
+
+      <div class="sanctuary-container">
+        <!-- 顶部按钮栏 -->
+        <div class="top-nav">
+          <!-- 新增的强制横屏按钮 -->
+          <button class="nav-btn rotate-btn" id="btnRotate">横屏浏览</button>
+          <button class="nav-btn" data-modal="modalSponsor">赞助我</button>
+          <button class="nav-btn" data-modal="modalSubmit">我要投稿</button>
+          <button class="nav-btn" data-modal="modalContact">联系站长</button>
+          <button class="nav-btn" data-modal="modalNotice">声明</button>
+        </div>
+
+        <h1 class="site-title">奇形种收容所</h1>
+        <div class="gallery" id="gallery"></div>
+      </div>
+
+    </div> <!-- end of scroll-container -->
+
+    <!-- ==================== 弹窗与灯箱（必须在滚动容器外，随整个屏幕一起旋转） ==================== -->
+    
+    <!-- 灯箱 -->
+    <div class="lightbox" id="lightbox">
+      <div class="lightbox-inner">
+        <button class="lightbox-close" id="lightboxClose" aria-label="关闭">×</button>
+        <img id="lightboxImg" src="" alt="放大的收容物图片">
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+      </div>
     </div>
 
-    <div id="commentList" class="comment-list">
-      <p class="comment-loading">加载留言中……</p>
-    </div>
-  </div>
-  <!-- ==================== 留言板结束 ==================== -->
-
-  <div class="sanctuary-container">
-
-    <!-- 顶部按钮栏（已移除 Tips） -->
-    <div class="top-nav">
-      <button class="nav-btn" data-modal="modalSponsor">赞助我</button>
-      <button class="nav-btn" data-modal="modalSubmit">我要投稿</button>
-      <button class="nav-btn" data-modal="modalContact">联系站长</button>
-      <button class="nav-btn" data-modal="modalNotice">声明</button>
+    <!-- 赞助我 -->
+    <div class="modal" id="modalSponsor">
+      <div class="modal-box">
+        <button class="modal-close" data-close aria-label="关闭">×</button>
+        <div class="modal-title">赞助我</div>
+        <img class="modal-img" src="Picture/money.jpg" alt="赞助二维码 / 赞助方式">
+      </div>
     </div>
 
-    <h1 class="site-title">奇形种收容所</h1>
-    <div class="gallery" id="gallery"></div>
-  </div>
-
-  <!-- 灯箱 -->
-  <div class="lightbox" id="lightbox">
-    <div class="lightbox-inner">
-      <button class="lightbox-close" id="lightboxClose" aria-label="关闭">×</button>
-      <img id="lightboxImg" src="" alt="放大的收容物图片">
-      <div class="lightbox-caption" id="lightboxCaption"></div>
+    <!-- 我要投稿 -->
+    <div class="modal" id="modalSubmit">
+      <div class="modal-box">
+        <button class="modal-close" data-close aria-label="关闭">×</button>
+        <div class="modal-title">我要投稿</div>
+        <div class="modal-text submit">点击"联系站长"通过邮箱联系站长或直接通过其他方式联系站长，将要投稿的内容和要求发给站长即可</div>
+      </div>
     </div>
-  </div>
 
-  <!-- 赞助我 -->
-  <div class="modal" id="modalSponsor">
-    <div class="modal-box">
-      <button class="modal-close" data-close aria-label="关闭">×</button>
-      <div class="modal-title">赞助我</div>
-      <img class="modal-img" src="Picture/money.jpg" alt="赞助二维码 / 赞助方式">
-    </div>
-  </div>
-
-  <!-- 我要投稿 -->
-  <div class="modal" id="modalSubmit">
-    <div class="modal-box">
-      <button class="modal-close" data-close aria-label="关闭">×</button>
-      <div class="modal-title">我要投稿</div>
-      <div class="modal-text submit">点击"联系站长"通过邮箱联系站长或直接通过其他方式联系站长，将要投稿的内容和要求发给站长即可</div>
-    </div>
-  </div>
-
-  <!-- 联系站长 -->
-  <div class="modal" id="modalContact">
-    <div class="modal-box">
-      <button class="modal-close" data-close aria-label="关闭">×</button>
-      <div class="modal-title">联系站长</div>
-      <div class="modal-text">站长联系方式：
+    <!-- 联系站长 -->
+    <div class="modal" id="modalContact">
+      <div class="modal-box">
+        <button class="modal-close" data-close aria-label="关闭">×</button>
+        <div class="modal-title">联系站长</div>
+        <div class="modal-text">站长联系方式：
 
 📧 邮箱：Raven_Blythe@outlook.com
 📧 邮箱：Raven_Blythe_Sama@outlook.com
 📧 邮箱：Raven_Sama@outlook.com
 📧 邮箱：Raven_Blythe@qq.com</div>
+      </div>
     </div>
-  </div>
 
-  <!-- 声明 -->
-  <div class="modal" id="modalNotice">
-    <div class="modal-box">
-      <button class="modal-close" data-close aria-label="关闭">×</button>
-      <div class="modal-title">声明</div>
-      <div class="modal-text notice">网站声明：此网站由站长使用deepseek生成（做了一些修改），网站不展示血腥，暴力，色情的文本及图片，我愿意承担由我个人维护不当所产生的一切责任</div>
+    <!-- 声明 -->
+    <div class="modal" id="modalNotice">
+      <div class="modal-box">
+        <button class="modal-close" data-close aria-label="关闭">×</button>
+        <div class="modal-title">声明</div>
+        <div class="modal-text notice">网站声明：此网站由站长使用deepseek生成（做了一些修改），网站不展示血腥，暴力，色情的文本及图片，我愿意承担由我个人维护不当所产生的一切责任</div>
+      </div>
     </div>
-  </div>
 
-  <!-- ============================================================
-       【改动 2 - 续】横屏提示遮罩
-       ============================================================ -->
-  <div id="rotateOverlay" class="rotate-overlay" role="dialog" aria-modal="true" aria-label="横屏提示">
-    <div class="rotate-content">
-      <div class="rotate-phone">📱</div>
-      <h2>请横屏浏览</h2>
-      <p>本页面为横屏设计<br>旋转手机可获得最佳浏览体验</p>
-      <button id="rotateDismiss" class="rotate-dismiss">仍然竖屏浏览</button>
-    </div>
-  </div>
+  </div> <!-- end of app-wrapper -->
 
   <script>
-    /* 1. 数组存储 P1 ~ P8
-       —— P1~P8 单独定制介绍 */
+    /* 1. 数组存储 P1 ~ P8 */
     const PICTURES = Array.from({ length: 8 }, (_, i) => {
       const num = i + 1;
-
       let intro = '介绍：待写入';
+      if (num === 1) intro = '介绍：此人吨位仅在年级主任之下，002号最严厉的主人，班主任最宠爱之人，绰号：洋葱';
+      if (num === 2) intro = '介绍：全培仁最深情之人&最成熟之人';
+      if (num === 3) intro = '介绍："哥的豪度零下108度"';
+      if (num === 4) intro = '介绍：全宇宙头发最整齐之人，火影2400的高玩，新南最忠诚的仆人，培仁最会谈恋爱之人';
+      if (num === 5) intro = '介绍：身份：天皇的后代&高市早苗的丈夫，人脉：孙笑川的兄弟，特点：半根舌头';
+      if (num === 6) intro = '介绍："爱因斯坦未必比我聪明"';
+      if (num === 7) intro = '介绍：世界上最黑的鸡蛋，全班第二个王';
+      if (num === 8) intro = '介绍：建站以来第一个主动想被挂上去的人，人民的好班长，13班的顶梁柱';
 
-      if (num === 1) {
-        intro = '介绍：此人吨位仅在年级主任之下，002号最严厉的主人，班主任最宠爱之人，绰号：洋葱';
-      }
-      if (num === 2) {
-        intro = '介绍：全培仁最深情之人&最成熟之人';
-      }
-      if (num === 3) {
-        intro = '介绍："哥的豪度零下108度"';
-      }
-      if (num === 4) {
-        intro = '介绍：全宇宙头发最整齐之人，火影2400的高玩，新南最忠诚的仆人，培仁最会谈恋爱之人';
-      }
-      if (num === 5) {
-        intro = '介绍：身份：天皇的后代&高市早苗的丈夫，人脉：孙笑川的兄弟，特点：半根舌头';
-      }
-      if (num === 6) {
-        intro = '介绍："爱因斯坦未必比我聪明"';
-      }
-      if (num === 7) {
-        intro = '介绍：世界上最黑的鸡蛋，全班第二个王';
-      }
-      if (num === 8) {
-        intro = '介绍：建站以来第一个主动想被挂上去的人，人民的好班长，13班的顶梁柱';
-      }
-
-      return {
-        name: `P${num}`,
-        ext: 'jpg',
-        label: `编号:${String(num).padStart(3, '0')}`,
-        intro: intro
-      };
+      return { name: `P${num}`, ext: 'jpg', label: `编号:${String(num).padStart(3, '0')}`, intro: intro };
     });
 
     let pictureCount = PICTURES.length;
@@ -839,27 +721,21 @@
     function renderGallery() {
       const gallery = document.getElementById('gallery');
       gallery.innerHTML = '';
-
       const list = PICTURES.slice(0, Math.min(pictureCount, PICTURES.length));
-
       list.forEach(pic => {
         const card = document.createElement('div');
         card.className = 'picture-card';
-
         const img = document.createElement('img');
         img.src = `Picture/${pic.name}.${pic.ext}`;
         img.alt = `奇形种收容所 ${pic.name} 收容物`;
         img.loading = 'lazy';
         img.addEventListener('click', () => openLightbox(pic));
-
         const label = document.createElement('div');
         label.className = 'picture-label';
         label.textContent = pic.label;
-
         const intro = document.createElement('div');
         intro.className = 'picture-intro';
         intro.textContent = pic.intro;
-
         card.appendChild(img);
         card.appendChild(label);
         card.appendChild(intro);
@@ -878,13 +754,11 @@
       lightboxImg.alt = `奇形种收容所 ${pic.name} 收容物`;
       lightboxCaption.textContent = pic.label;
       lightbox.classList.add('active');
-      document.body.style.overflow = 'hidden';
     }
 
     function closeLightbox() {
       lightbox.classList.remove('active');
       lightboxImg.src = '';
-      document.body.style.overflow = '';
     }
 
     lightboxClose.addEventListener('click', closeLightbox);
@@ -897,18 +771,14 @@
 
     function openModal(id) {
       const m = document.getElementById(id);
-      if (m) {
-        m.classList.add('active');
-        document.body.style.overflow = 'hidden';
-      }
+      if (m) m.classList.add('active');
     }
 
     function closeAllModals() {
       modals.forEach(m => m.classList.remove('active'));
-      document.body.style.overflow = '';
     }
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
+    document.querySelectorAll('.nav-btn[data-modal]').forEach(btn => {
       btn.addEventListener('click', () => {
         const target = btn.getAttribute('data-modal');
         openModal(target);
@@ -935,31 +805,12 @@
     /* 5. 控制台全局函数 */
     window.setPictureCount = function (n) {
       const num = parseInt(n, 10);
-      if (isNaN(num) || num < 0) {
-        console.warn('❌ 请输入一个大于等于 0 的数字，例如 setPictureCount(5)');
-        return;
-      }
-      if (num > PICTURES.length) {
-        console.warn(`⚠️ 数组中只有 ${PICTURES.length} 张图片，已自动设为最大值。`);
-      }
+      if (isNaN(num) || num < 0) return;
       pictureCount = Math.min(num, PICTURES.length);
       renderGallery();
     };
-
-    window.showAllPictures = function () {
-      pictureCount = PICTURES.length;
-      renderGallery();
-    };
-
-    window.hideAllPictures = function () {
-      pictureCount = 0;
-      renderGallery();
-    };
-
-    window.listPictures = function () {
-      console.table(PICTURES);
-      return PICTURES;
-    };
+    window.showAllPictures = function () { pictureCount = PICTURES.length; renderGallery(); };
+    window.hideAllPictures = function () { pictureCount = 0; renderGallery(); };
 
     /* 6. 初始化 */
     renderGallery();
@@ -975,22 +826,17 @@
       const messageEl = document.getElementById('commentMessage');
       const listEl = document.getElementById('commentList');
 
-      // 格式化时间
       function formatTime(str) {
         if (!str) return '';
         const d = new Date(str.replace(' ', 'T') + 'Z');
-        if (isNaN(d.getTime())) return str;
-        return d.toLocaleString('zh-CN', { hour12: false });
+        return isNaN(d.getTime()) ? str : d.toLocaleString('zh-CN', { hour12: false });
       }
-
-      // 转义 HTML，防止 XSS
       function escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
       }
 
-      // 加载留言列表
       async function loadComments() {
         try {
           const res = await fetch(API);
@@ -1015,7 +861,6 @@
         }
       }
 
-      // 提交留言
       async function submitComment() {
         const nickname = nicknameInput.value.trim();
         const content = contentInput.value.trim();
@@ -1055,55 +900,67 @@
     })();
 
     /* ============================================================
-       【改动 2 - 续】8. 横屏提示逻辑
+       8. 强制 CSS 旋转横屏逻辑
        ============================================================ */
     (function () {
-      const overlay = document.getElementById('rotateOverlay');
-      const dismissBtn = document.getElementById('rotateDismiss');
-      if (!overlay || !dismissBtn) return;
+      const btnRotate = document.getElementById('btnRotate');
+      const appWrapper = document.getElementById('app-wrapper');
+      let isLandscapeMode = false;
 
-      // 用 matchMedia 和 CSS 里的媒体查询保持一致
-      const mq = window.matchMedia('(orientation: portrait) and (pointer: coarse) and (max-width: 900px)');
+      function applyRotation() {
+        // 如果物理屏幕本身就是横的，那么不需要强制旋转（系统会自动适配）
+        if (window.innerWidth > window.innerHeight) {
+          appWrapper.style.width = '100%';
+          appWrapper.style.height = '100%';
+          appWrapper.style.transform = 'none';
+          btnRotate.textContent = '横屏浏览';
+          isLandscapeMode = false;
+          return;
+        }
 
-      // 记住用户的选择（sessionStorage：关掉标签页重开才会重新提示）
-      let dismissed = false;
-      try {
-        dismissed = sessionStorage.getItem('rotateDismissed') === '1';
-      } catch (e) { /* 隐私模式下可能抛异常，忽略 */ }
-
-      if (dismissed) overlay.classList.add('dismissed');
-
-      // 同步 body 的滚动锁定状态
-      function syncLock() {
-        const shown = mq.matches && !overlay.classList.contains('dismissed');
-        document.body.classList.toggle('rotate-locked', shown);
+        if (isLandscapeMode) {
+          // 强制横屏：把宽变成高，高变成宽，并顺时针旋转90度
+          const w = window.innerHeight;
+          const h = window.innerWidth;
+          
+          appWrapper.style.width = `${w}px`;
+          appWrapper.style.height = `${h}px`;
+          appWrapper.style.transformOrigin = 'top left';
+          appWrapper.style.transform = `rotate(90deg) translateY(-${w}px)`;
+          
+          btnRotate.textContent = '恢复竖屏';
+        } else {
+          // 恢复竖屏
+          appWrapper.style.width = '100%';
+          appWrapper.style.height = '100%';
+          appWrapper.style.transform = 'none';
+          
+          btnRotate.textContent = '横屏浏览';
+        }
       }
 
-      dismissBtn.addEventListener('click', () => {
-        overlay.classList.add('dismissed');
-        try {
-          sessionStorage.setItem('rotateDismissed', '1');
-        } catch (e) { /* 忽略 */ }
-        syncLock();
+      btnRotate.addEventListener('click', () => {
+        if (window.innerWidth > window.innerHeight) {
+          alert('您当前已经处于物理横屏状态，无需强制旋转。');
+          return;
+        }
+        isLandscapeMode = !isLandscapeMode;
+        applyRotation();
       });
 
-      // 监听屏幕方向变化 / 尺寸变化，实时更新
-      if (mq.addEventListener) {
-        mq.addEventListener('change', syncLock);
-      } else {
-        mq.addListener(syncLock); // 旧浏览器兜底
-      }
-      window.addEventListener('resize', syncLock);
-      window.addEventListener('orientationchange', () => setTimeout(syncLock, 100));
-
-      syncLock();
+      // 当设备物理旋转时，自动重置状态，避免排版错乱
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > window.innerHeight) {
+          isLandscapeMode = false;
+        }
+        applyRotation();
+      });
     })();
 
     console.log(
       '%c💜 奇形种收容所 · 控制台已就绪 💛',
       'color:#8a4fd0;font-size:16px;font-weight:bold;'
     );
-    console.log('可用命令：setPictureCount(n) / showAllPictures() / hideAllPictures() / listPictures()');
   </script>
 </body>
 </html>
