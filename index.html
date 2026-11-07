@@ -14,8 +14,7 @@
     body {
       font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
       background: linear-gradient(145deg, #fffbe6 0%, #f5e6ff 50%, #e0c8ff 100%);
-      /* 阻止系统默认滚动，交由内部容器处理 */
-      overflow: hidden; 
+      overflow: hidden; /* 禁止外层系统滚动，滚动交由内部处理 */
       position: relative;
     }
 
@@ -37,7 +36,7 @@
     }
 
     /* ============================================================
-       整个应用的固定包裹层（用于整体旋转和固定尺寸）
+       核心包裹层：默认（PC/物理横屏）状态
        ============================================================ */
     #app-wrapper {
       position: fixed;
@@ -46,13 +45,22 @@
       width: 100vw;
       height: 100vh;
       height: 100dvh;
-      overflow: hidden; /* 禁止外层滚动 */
       transform-origin: top left;
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1;
     }
 
-    /* 内部实际负责滚动的容器（绝对定位防止高度塌陷） */
+    /* ============================================================
+       强制竖屏转横屏模式（由 JS 动态添加）
+       宽高互换，利用 100dvh 解决移动端地址栏跳动问题
+       ============================================================ */
+    body.force-landscape #app-wrapper {
+      width: 100dvh;
+      height: 100vw;
+      transform: rotate(90deg) translateY(-100dvh);
+    }
+
+    /* 内部滚动层：绝对定位防止高度塌陷 */
     .scroll-container {
       position: absolute;
       top: 0;
@@ -61,22 +69,11 @@
       height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
-      -webkit-overflow-scrolling: touch; /* iOS 平滑滚动 */
+      -webkit-overflow-scrolling: touch; /* iOS 丝滑滚动 */
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 2rem 1rem;
-    }
-
-    /* ============================================================
-       强制 CSS 横屏模式 (核心修复点)
-       ============================================================ */
-    body.force-landscape #app-wrapper {
-      /* 宽高互换，兼容移动端动态视口 */
-      width: 100dvh;
-      height: 100vw;
-      /* 顺时针旋转90度并平移回屏幕内 */
-      transform: rotate(90deg) translateY(-100dvh);
     }
 
     /* 主容器 */
@@ -134,7 +131,7 @@
       transform: translateY(0);
     }
 
-    /* 横屏按钮样式 */
+    /* 横屏浏览按钮 */
     .nav-btn.rotate-btn {
       background: rgba(255, 235, 150, 0.9);
       border-color: #ffd966;
@@ -144,6 +141,11 @@
       background: #ffeaa0;
       color: #6b4400;
       border-color: #ffcc33;
+    }
+
+    /* 强制旋转状态下，隐藏这个按钮（因为已经是横屏了） */
+    body.force-landscape .nav-btn.rotate-btn {
+      display: none;
     }
 
     .site-title {
@@ -244,11 +246,11 @@
     }
 
     /* ============================================================
-       灯箱与弹窗 (设为 absolute 绝对定位，随 app-wrapper 旋转)
+       弹窗与灯箱（挂载在 #app-wrapper 内，绝对定位，随整体旋转）
        ============================================================ */
     .lightbox, .modal {
       display: none;
-      position: absolute; /* 相对于 #app-wrapper 定位 */
+      position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(35, 15, 55, 0.88);
       z-index: 1000;
@@ -554,13 +556,6 @@
       .comments-section { padding: 1.2rem; border-radius: 24px; }
       .comments-title { font-size: 1.3rem; }
     }
-
-    /* 当物理设备本身处于横屏时，隐藏强制横屏按钮（因为不需要了） */
-    @media (orientation: landscape) {
-      .nav-btn.rotate-btn {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
@@ -568,7 +563,7 @@
   <!-- 整个应用的主包裹层 -->
   <div id="app-wrapper">
     
-    <!-- 滚动内容区 -->
+    <!-- 内部滚动层 -->
     <div class="scroll-container">
       
       <!-- ==================== 留言板 ==================== -->
@@ -591,7 +586,7 @@
       <div class="sanctuary-container">
         <!-- 顶部按钮栏 -->
         <div class="top-nav">
-          <!-- 强制横屏按钮 -->
+          <!-- 强制横屏按钮（进入强制横屏后会隐藏） -->
           <button class="nav-btn rotate-btn" id="btnRotate">横屏浏览</button>
           <button class="nav-btn" data-modal="modalSponsor">赞助我</button>
           <button class="nav-btn" data-modal="modalSubmit">我要投稿</button>
@@ -605,7 +600,7 @@
 
     </div> <!-- end of scroll-container -->
 
-    <!-- ==================== 弹窗与灯箱（脱离滚动流，随屏幕旋转并始终居中） ==================== -->
+    <!-- ==================== 弹窗与灯箱（脱离滚动流，永远居中） ==================== -->
     
     <!-- 灯箱 -->
     <div class="lightbox" id="lightbox">
@@ -861,33 +856,27 @@
     })();
 
     /* ============================================================
-       8. 强制 CSS 旋转横屏逻辑（修复滚动 Bug）
+       8. 点击强制横屏功能（完美避免高度塌陷）
        ============================================================ */
     (function () {
       const btnRotate = document.getElementById('btnRotate');
       const body = document.body;
 
       btnRotate.addEventListener('click', () => {
-        // 如果物理屏幕本身就是横的，提示无需强制
-        if (window.innerWidth > window.innerHeight && !body.classList.contains('force-landscape')) {
-          alert('您当前已处于物理横屏状态，无需强制旋转。');
+        // 如果物理屏幕本身就是宽的（PC/横屏），提示一下
+        if (window.innerWidth > window.innerHeight) {
+          alert('您当前已处于横屏状态，无需强制旋转。');
           return;
         }
-
-        body.classList.toggle('force-landscape');
-
-        if (body.classList.contains('force-landscape')) {
-          btnRotate.textContent = '恢复竖屏';
-        } else {
-          btnRotate.textContent = '横屏浏览';
-        }
+        
+        // 给 body 添加类名，由 CSS 接管旋转和滚动
+        body.classList.add('force-landscape');
       });
 
-      // 当用户物理旋转设备时，自动取消强制旋转状态，避免冲突
+      // 当手机物理旋转成横屏时，自动取消强制旋转状态，避免排版混乱
       window.addEventListener('resize', () => {
         if (window.innerWidth > window.innerHeight && body.classList.contains('force-landscape')) {
           body.classList.remove('force-landscape');
-          btnRotate.textContent = '横屏浏览';
         }
       });
     })();
